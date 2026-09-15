@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyecto Matriz LED Emocional · 3° 1° · Programación</title>
+<style>
+  :root{
+    --ink:#12181f;--panel:#1a2530;--panel-2:#22303d;--line:#33454f;
+    --steel:#8fa3b0;--steel-dim:#5f7280;--amber:#ffb340;--amber-glow:#ff9b1a;
+    --go:#3ddc84;--stop:#ff5c5c;--floor:#0f1620;--paper:#f4f6f7;
+    --ink-2:#3a4a57;--brand:#0f6e8c;--brand-deep:#0a4a5e;
+    --led-off:#1b2530;--led-on:#ffcf3a;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;}
+  header.masthead{background:radial-gradient(120% 140% at 85% -20%, rgba(255,179,64,.14), transparent 55%),linear-gradient(160deg,#0c141c 0%, #16222e 60%, #0d1a24 100%);color:#eef4f7;padding:44px 32px 40px;border-bottom:3px solid var(--amber);}
+  .mast-inner{max-width:1080px;margin:0 auto;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;justify-content:space-between;}
+  .mast-tag{font-size:.72rem;letter-spacing:.28em;color:var(--amber);font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .mast-tag::before{content:"";width:26px;height:2px;background:var(--amber);display:inline-block;}
+  h1.mast-title{margin:0;font-size:clamp(2rem,4.5vw,3.1rem);font-weight:800;letter-spacing:-.02em;line-height:1.02;}
+  .mast-sub{margin:12px 0 0;color:var(--steel);font-size:1.05rem;max-width:48ch;}
+  .mast-sub b{color:#eef4f7;}
+  .deadline-pill{margin-top:18px;display:inline-block;background:rgba(255,179,64,.12);border:1px solid var(--amber);color:#ffd591;border-radius:8px;padding:8px 16px;font-size:.9rem;}
+  .deadline-pill b{color:var(--amber);}
+  .mast-meta{text-align:right;font-size:.85rem;color:var(--steel);border-left:1px solid var(--line);padding-left:22px;}
+  .mast-meta strong{display:block;color:#eef4f7;font-size:1rem;margin-bottom:2px;}
+  nav.jump{max-width:1080px;margin:22px auto 0;display:flex;gap:8px;flex-wrap:wrap;}
+  nav.jump a{color:var(--steel);text-decoration:none;font-size:.85rem;font-weight:600;padding:7px 15px;border:1px solid var(--line);border-radius:999px;transition:.18s;}
+  nav.jump a:hover{color:#0c141c;background:var(--amber);border-color:var(--amber);}
+  main{max-width:1080px;margin:0 auto;padding:0 24px;}
+  section{padding:52px 0;border-bottom:1px solid #dde3e6;}
+  section:last-child{border-bottom:none;}
+  h2.sect{font-size:1.7rem;font-weight:800;margin:0 0 6px;color:var(--brand-deep);letter-spacing:-.01em;display:flex;align-items:baseline;gap:14px;}
+  h2.sect .n{font-size:.95rem;color:var(--amber-glow);font-weight:800;border:2px solid var(--amber);border-radius:8px;padding:2px 9px;}
+  .sect-lead{color:var(--ink-2);max-width:66ch;margin:0 0 26px;font-size:1.02rem;}
+
+  /* SIMULADOR */
+  .sim-shell{background:linear-gradient(180deg,#16222e,#0f1a24);border-radius:18px;padding:22px;box-shadow:0 18px 50px -20px rgba(6,20,30,.7);border:1px solid #24333f;}
+  .sim-grid{display:grid;grid-template-columns:1fr 320px;gap:22px;}
+  @media(max-width:860px){.sim-grid{grid-template-columns:1fr;}}
+  /* matriz + cara */
+  .face-wrap{background:var(--floor);border:1px solid #223039;border-radius:14px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .matrix{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;background:#0a0f16;padding:14px;border-radius:12px;border:1px solid #1c2732;}
+  .led{width:26px;height:26px;border-radius:50%;background:var(--led-off);transition:background .25s, box-shadow .25s;}
+  @media(max-width:520px){.led{width:18px;height:18px;}}
+  .led.on{background:var(--led-on);box-shadow:0 0 10px -1px var(--led-on);}
+  .mood-name{font-family:"Consolas",monospace;font-size:1.2rem;font-weight:800;letter-spacing:.05em;}
+  .rgb-strip{display:flex;align-items:center;gap:12px;background:#0a0f16;border:1px solid #1c2732;border-radius:10px;padding:10px 16px;}
+  .rgb-dot{width:30px;height:30px;border-radius:50%;transition:background .4s, box-shadow .4s;}
+  .rgb-label{font-size:.72rem;color:var(--steel-dim);letter-spacing:.05em;}
+  /* panel sensores */
+  .device{background:#0d1620;border:1px solid #2b3a45;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:16px;}
+  .device h3{margin:0;font-size:.78rem;letter-spacing:.18em;color:var(--steel-dim);font-weight:700;}
+  .slider-unit label{font-size:.72rem;color:var(--steel);font-weight:700;display:flex;justify-content:space-between;margin-bottom:4px;}
+  .slider-unit label b{color:#eef4f7;}
+  input[type=range]{width:100%;accent-color:var(--brand);}
+  .toggle-row{display:flex;gap:10px;}
+  .tgl{flex:1;border:1px solid #3a4c57;background:#1a242c;color:var(--steel);padding:10px;border-radius:9px;cursor:pointer;font-weight:700;font-size:.82rem;transition:.15s;}
+  .tgl.on{background:var(--brand);color:#eaf7fb;border-color:var(--brand);}
+  .readout{background:#0a1219;border:1px solid #24333d;border-radius:10px;padding:12px;font-family:"Consolas",monospace;font-size:.82rem;color:var(--steel);display:flex;flex-direction:column;gap:5px;}
+  .readout .r{display:flex;justify-content:space-between;} .readout b{color:#eef4f7;}
+  .log{background:#0a1219;border-radius:9px;border:1px solid #24333d;padding:10px;font-family:"Consolas",monospace;font-size:.74rem;color:var(--steel);height:80px;overflow-y:auto;line-height:1.5;margin-top:12px;}
+  .log div{padding:1px 0;} .log .t{color:var(--steel-dim);} .log .hi{color:var(--amber);}
+  .sim-hint{margin-top:16px;color:var(--ink-2);font-size:.9rem;text-align:center;}
+  .sim-hint b{color:var(--brand-deep);}
+
+  /* tabla estados de ánimo */
+  .mood-tab{width:100%;border-collapse:collapse;font-size:.92rem;margin-top:6px;}
+  .mood-tab th{background:var(--brand-deep);color:#eaf7fb;text-align:left;padding:8px 12px;font-size:.78rem;}
+  .mood-tab td{padding:8px 12px;border:1px solid #e5eaed;color:var(--ink-2);}
+  .mood-tab tr:nth-child(even) td{background:#f6f9fa;}
+  .mood-tab .cond{font-family:Consolas,monospace;color:var(--brand-deep);font-weight:700;}
+
+  /* dos secciones (compartido) */
+  .secciones-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:8px;}
+  @media(max-width:720px){.secciones-grid{grid-template-columns:1fr;}}
+  .sec-card{border-radius:14px;padding:20px 22px;color:#eef4f7;position:relative;overflow:hidden;}
+  .sec-card.prog{background:linear-gradient(155deg,#0a4a5e,#0d6480);}
+  .sec-card.tec{background:linear-gradient(155deg,#7a4d10,#a56a15);}
+  .sec-card .sec-kicker{font-size:.7rem;letter-spacing:.2em;font-weight:700;opacity:.85;}
+  .sec-card h3{margin:6px 0 4px;font-size:1.35rem;font-weight:800;}
+  .sec-card .sec-role{font-size:.9rem;opacity:.9;margin-bottom:14px;font-style:italic;}
+  .sec-card ul{margin:0;padding-left:18px;font-size:.94rem;line-height:1.6;}
+  .sec-card ul li{margin-bottom:5px;}
+  .sec-card .sec-icon{position:absolute;top:14px;right:18px;font-size:1.8rem;opacity:.35;}
+  .handshake{text-align:center;margin:6px 0 20px;font-size:.95rem;color:var(--brand-deep);font-weight:700;}
+  .decision{background:#fff;border:2px dashed var(--amber);border-radius:14px;padding:20px 22px;margin-top:8px;}
+  .decision h4{margin:0 0 6px;color:#7a5a1e;font-size:1.1rem;display:flex;align-items:center;gap:8px;}
+  .decision p{margin:0 0 12px;color:var(--ink-2);font-size:.95rem;}
+  .decision-tables{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:720px){.decision-tables{grid-template-columns:1fr;}}
+  .dec-block h5{margin:0 0 8px;font-size:.75rem;letter-spacing:.12em;color:var(--steel-dim);font-weight:700;}
+  .dec-block table{width:100%;border-collapse:collapse;font-size:.88rem;}
+  .dec-block th{background:#f0f4f6;text-align:left;padding:6px 9px;color:var(--ink-2);font-size:.72rem;letter-spacing:.05em;border:1px solid #dde3e6;}
+  .dec-block td{padding:6px 9px;border:1px solid #e5eaed;color:var(--ink-2);}
+  .dec-block td.pick{color:#b0b6bb;font-style:italic;}
+
+  .class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+  .class-card{background:#fff;border:1px solid #d7dee2;border-radius:12px;overflow:hidden;box-shadow:0 2px 0 #e5eaed;}
+  .class-card .cc-head{background:var(--brand-deep);color:#eaf7fb;padding:10px 14px;font-weight:800;font-family:"Consolas",monospace;font-size:1.05rem;}
+  .class-card .cc-body{padding:12px 14px;}
+  .cc-body .lbl{font-size:.68rem;letter-spacing:.12em;color:var(--steel-dim);font-weight:700;margin:6px 0 3px;}
+  .cc-body .lbl:first-child{margin-top:0;}
+  .cc-body code{font-family:"Consolas",monospace;font-size:.83rem;color:var(--ink-2);display:block;}
+
+  .phase-title{display:flex;align-items:center;gap:12px;margin:34px 0 16px;font-size:1.05rem;font-weight:800;color:var(--brand-deep);}
+  .phase-title span{font-size:.72rem;background:var(--brand);color:#fff;padding:3px 10px;border-radius:6px;letter-spacing:.05em;}
+  .mission{display:grid;grid-template-columns:64px 1fr;gap:0;margin-bottom:12px;border:1px solid #d7dee2;border-radius:12px;overflow:hidden;background:#fff;}
+  .m-num{background:linear-gradient(160deg,#12323c,#0a4a5e);color:var(--amber);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;}
+  .m-num small{color:var(--steel-dim);font-size:.6rem;font-weight:600;letter-spacing:.05em;}
+  .m-num small.lim{color:var(--amber);margin-top:4px;font-size:.62rem;}
+  .m-num b{font-size:1.5rem;line-height:1;}
+  .mission-final{border-color:var(--amber);box-shadow:0 0 0 2px rgba(255,179,64,.25);}
+  .mission-final .m-num{background:linear-gradient(160deg,#3a2a08,#7a5410);}
+  .mission-final .deliver{background:var(--amber);color:#12181f;}
+  .m-body{padding:13px 16px;}
+  .m-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+  .m-body h4{margin:0;font-size:1.05rem;color:var(--ink);}
+  .sec-tag{font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:999px;letter-spacing:.03em;white-space:nowrap;}
+  .tag-prog{background:#dceef3;color:#0a4a5e;}
+  .tag-tec{background:#f7e8cf;color:#7a4d10;}
+  .tag-ambas{background:#e4e8ea;color:#3a4a57;}
+  .m-body p{margin:0;color:var(--ink-2);font-size:.92rem;}
+  .m-body .deliver{margin-top:7px;font-size:.85rem;color:var(--brand-deep);font-weight:600;background:#e8f3f6;display:inline-block;padding:3px 10px;border-radius:6px;}
+
+  .note{border-left:4px solid var(--amber);background:#fff8ec;border-radius:0 10px 10px 0;padding:14px 18px;margin:20px 0;color:#5a4523;}
+  .note b{color:#7a5a1e;}
+  .note.bridge{border-left-color:var(--brand);background:#eaf4f7;color:#1c3d47;}
+  .note.bridge b{color:var(--brand-deep);}
+  .note code{font-family:Consolas,monospace;}
+
+  footer{background:#0c141c;color:var(--steel-dim);text-align:center;padding:28px;font-size:.85rem;}
+  footer b{color:var(--steel);}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="mast-inner">
+    <div>
+      <div class="mast-tag">EXPOTÉCNICA · PROYECTO INTEGRADOR</div>
+      <h1 class="mast-title">Matriz LED<br>que siente el clima</h1>
+      <p class="mast-sub">Una carita hecha de luces que cambia de humor según el tiempo. Lee lluvia, temperatura, humedad y luz, y muestra cómo se siente — sonríe con sol, se enoja con calor, se entristece con lluvia. Un proyecto de taller entre dos secciones: <b>Programación</b> pone la lógica, <b>Tecnología y Control</b> pone el cuerpo físico.</p>
+      <div class="deadline-pill">📅 Entrega para corrección: <b>miércoles 12 de noviembre</b> · 10 semanas de trabajo</div>
+    </div>
+    <div class="mast-meta">
+      <strong>3° 1°</strong>
+      Taller de la especialidad<br>Programación + Tecnología y Control<br>
+      <span style="color:var(--amber)">Entrega: mié 12/11</span>
+    </div>
+  </div>
+  <nav class="jump">
+    <a href="#sim">Simulador</a>
+    <a href="#reto">El desafío</a>
+    <a href="#como">Cómo funciona</a>
+    <a href="#secciones">Las dos secciones</a>
+    <a href="#clases">Diseño de objetos</a>
+    <a href="#ruta">Hoja de ruta</a>
+    <a href="#arduino">Llevarlo a Arduino</a>
+  </nav>
+</header>
+
+<main>
+
+  <section id="sim">
+    <h2 class="sect"><span class="n">01</span>Simulador del sistema</h2>
+    <p class="sect-lead">Esta es la carita que van a construir. Movés los sensores con las perillas (como si cambiara el clima) y mirás cómo cambia de humor en la matriz de LEDs. El LED de color, aparte, va del azul (frío) al rojo (calor) según la temperatura.</p>
+
+    <div class="sim-shell">
+      <div class="sim-grid">
+        <div class="face-wrap">
+          <div class="matrix" id="matrix"></div>
+          <div class="mood-name" id="mood-name">😊 Contenta</div>
+          <div class="rgb-strip">
+            <span class="rgb-label">LED de temperatura:</span>
+            <div class="rgb-dot" id="rgb-dot"></div>
+            <span class="rgb-label" id="rgb-txt">templado</span>
+          </div>
+        </div>
+
+        <div class="device">
+          <h3>SENSORES (moved las perillas)</h3>
+          <div class="slider-unit">
+            <label>Temperatura (DHT22) <b><span id="v-tmp">22</span>°C</b></label>
+            <input type="range" id="sl-tmp" min="-5" max="45" value="22">
+          </div>
+          <div class="slider-unit">
+            <label>Humedad (DHT22) <b><span id="v-hum">50</span>%</b></label>
+            <input type="range" id="sl-hum" min="0" max="100" value="50">
+          </div>
+          <div class="slider-unit">
+            <label>Luz (fotorresistor) <b><span id="v-luz">70</span>%</b></label>
+            <input type="range" id="sl-luz" min="0" max="100" value="70">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--steel);font-weight:700;display:block;margin-bottom:6px">Sensor de lluvia</label>
+            <div class="toggle-row">
+              <button class="tgl on" id="tg-seco">SECO</button>
+              <button class="tgl" id="tg-lluvia">LLUEVE</button>
+            </div>
+          </div>
+          <div class="readout" id="readout"></div>
+        </div>
+      </div>
+      <div class="log" id="s-log"></div>
+    </div>
+    <p class="sim-hint">Probá esto: activá <b>LLUEVE</b> y la carita se pone triste. Después subí la temperatura arriba de 32° y mirá cómo se enoja y el LED se pone rojo. Bajá la luz para que se duerma.</p>
+  </section>
+
+  <section id="reto">
+    <h2 class="sect"><span class="n">02</span>El desafío</h2>
+    <p class="sect-lead">La gracia no es prender LEDs: es que la máquina <b>combine varias lecturas y elija una reacción</b>. Muchos sensores, muchas caras posibles, una sola decisión por vez.</p>
+    <div class="note bridge">
+      <b>La misión:</b> construir una carita en una <b>matriz de LEDs</b> que reacciona al clima. Cuatro sensores le dan información: <b>lluvia</b> (¿está lloviendo?), <b>temperatura y humedad</b> (con un DHT22), y <b>luz</b> (con un fotorresistor). Según lo que leen, la carita muestra un <b>estado de ánimo</b> distinto (contenta, triste, enojada, dormida…). Además, un <b>LED de color</b> cambia de tono según la temperatura: azul cuando hace frío, rojo cuando hace calor.
+    </div>
+    <div class="note">
+      <b>Por qué es un buen desafío:</b> obliga a pensar cómo <b>traducir números en una decisión</b>. No hay una sola condición: la carita tiene que decidir su humor combinando cuatro entradas, y eso lleva a ordenar bien las reglas (¿qué gana si llueve pero hace calor?). Es lógica de decisión pura, con una salida visual muy vistosa para la Expo.
+    </div>
+  </section>
+
+  <section id="como">
+    <h2 class="sect"><span class="n">03</span>Cómo funciona por dentro</h2>
+    <p class="sect-lead">El sistema repite siempre el mismo ciclo. Entender este recorrido es entender todo el proyecto.</p>
+    <div class="note bridge">
+      <b>El ciclo de la carita:</b> leer los cuatro sensores → decidir el estado de ánimo según una tabla de reglas → dibujar esa cara en la matriz de LEDs → calcular el color del LED según la temperatura → esperar un momento y volver a empezar.
+    </div>
+    <div class="note">
+      <b>Por qué con objetos:</b> el sistema está hecho de piezas, y cada una es un objeto. Cada <b>Sensor</b> sabe leer su magnitud; la <b>Matriz</b> sabe dibujar una cara; el <b>LedColor</b> sabe pasar una temperatura a un color; el objeto <b>Cara</b> es el que decide qué humor mostrar combinando todo.
+    </div>
+
+    <h3 style="color:var(--brand-deep);margin:26px 0 4px;font-size:1.15rem">La tabla de humores (el cerebro del sistema)</h3>
+    <p style="color:var(--ink-2);margin:0 0 10px;font-size:.98rem">Toda la inteligencia cabe en esta tabla. El orden importa: se revisa de arriba hacia abajo y gana la primera regla que se cumple.</p>
+    <table class="mood-tab">
+      <tr><th>Prioridad</th><th>Condición</th><th>Estado de ánimo</th></tr>
+      <tr><td>1</td><td class="cond">luz &lt; 20%</td><td>😴 Dormida (es de noche)</td></tr>
+      <tr><td>2</td><td class="cond">llueve</td><td>😢 Triste</td></tr>
+      <tr><td>3</td><td class="cond">temp &gt; 32°C</td><td>😠 Enojada (mucho calor)</td></tr>
+      <tr><td>4</td><td class="cond">temp &lt; 5°C</td><td>🥶 Congelada</td></tr>
+      <tr><td>5</td><td class="cond">en cualquier otro caso</td><td>😊 Contenta</td></tr>
+    </table>
+    <p class="hint" style="color:var(--steel-dim);font-size:.85rem;margin-top:8px">Esta tabla es un punto de partida: parte del trabajo es que definan sus propias caras y reglas.</p>
+  </section>
+
+  <section id="secciones">
+    <h2 class="sect"><span class="n">04</span>Un proyecto, dos secciones</h2>
+    <p class="sect-lead">Este trabajo es del taller de la especialidad, así que lo llevan adelante <b>dos secciones en conjunto</b>. Cada una tiene su terreno, y se encuentran en un punto: el hardware que arma Tecnología y Control es el cuerpo que la lógica de Programación pone a funcionar.</p>
+    <div class="secciones-grid">
+      <div class="sec-card prog">
+        <span class="sec-icon">&lt;/&gt;</span>
+        <div class="sec-kicker">SECCIÓN A</div>
+        <h3>Programación</h3>
+        <div class="sec-role">El cerebro: la lógica que decide el humor.</div>
+        <ul>
+          <li>Diseñar las clases (Sensor, Matriz, LedColor, Cara).</li>
+          <li>Programar la tabla de reglas que elige el estado de ánimo.</li>
+          <li>Dibujar cada cara encendiendo los LEDs correctos de la matriz.</li>
+          <li>Documentar el código y el diseño de objetos.</li>
+        </ul>
+      </div>
+      <div class="sec-card tec">
+        <span class="sec-icon">⚙</span>
+        <div class="sec-kicker">SECCIÓN B</div>
+        <h3>Tecnología y Control</h3>
+        <div class="sec-role">El cuerpo: lo que mide y lo que se ilumina.</div>
+        <ul>
+          <li>Definir la <b>matriz de LEDs</b> (¿MAX7219? ¿NeoPixel?) y montarla.</li>
+          <li>Conectar el DHT22, el sensor de lluvia, el fotorresistor y el LED de color.</li>
+          <li>Armar el gabinete o soporte de la carita.</li>
+          <li>Documentar el conexionado y la lista de componentes.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="handshake">🤝 El punto de encuentro es la Misión 7: acá el cuerpo y el cerebro se unen y la carita reacciona sola.</div>
+
+    <div class="decision">
+      <h4>🎯 Primera tarea de Tecnología y Control: definir el hardware</h4>
+      <p>El proyecto no les dice todo el hardware — hay decisiones que toman ustedes. La más importante: <b>¿qué tipo de matriz de LEDs usan?</b> Una matriz 8x8 con módulo MAX7219 se controla con pocos pines; una tira NeoPixel da color pero se programa distinto. Estas tablas son para completar; las opciones son pistas, no la respuesta.</p>
+      <div class="decision-tables">
+        <div class="dec-block">
+          <h5>SENSAR · ¿QUÉ NECESITA PERCIBIR?</h5>
+          <table>
+            <tr><th>Función a cubrir</th><th>Componente / decisión</th></tr>
+            <tr><td>Temperatura y humedad</td><td class="pick">DHT22</td></tr>
+            <tr><td>Si está lloviendo</td><td class="pick">sensor de lluvia (módulo)</td></tr>
+            <tr><td>Cuánta luz hay</td><td class="pick">fotorresistor (LDR)</td></tr>
+          </table>
+        </div>
+        <div class="dec-block">
+          <h5>MOSTRAR · ¿QUÉ NECESITA HACER?</h5>
+          <table>
+            <tr><th>Acción a producir</th><th>Componente / decisión</th></tr>
+            <tr><td>Dibujar la carita</td><td class="pick">matriz LED 8x8 (¿MAX7219?)</td></tr>
+            <tr><td>Color según temperatura</td><td class="pick">LED RGB</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <b>Regla de la integración:</b> los pines y componentes que defina Tecnología y Control tienen que coincidir con los que Programación usa en el código. La <b>tabla de pines</b> es un documento compartido. Un dato útil: el DHT22 y la matriz MAX7219 tienen librerías propias (<code>DHT</code> y <code>LedControl</code>) — conviene probarlas por separado antes de integrarlas.
+    </div>
+  </section>
+
+  <section id="clases">
+    <h2 class="sect"><span class="n">05</span>Diseño de objetos</h2>
+    <p class="sect-lead">Este es el terreno de Programación. Antes de tocar el hardware, definimos las clases. Si el diseño está bien pensado, el código sale casi solo. Cada tarjeta es una clase con lo que <em>guarda</em> y lo que <em>hace</em>.</p>
+    <div class="class-grid">
+      <div class="class-card"><div class="cc-head">Sensor</div><div class="cc-body">
+        <div class="lbl">GUARDA</div><code>pin · tipo · ultimoValor</code>
+        <div class="lbl">HACE</div><code>leer()<br>obtenerValor()</code>
+      </div></div>
+      <div class="class-card"><div class="cc-head">Matriz</div><div class="cc-body">
+        <div class="lbl">GUARDA</div><code>pines · patron actual (8x8)</code>
+        <div class="lbl">HACE</div><code>dibujarCara(patron)<br>limpiar()</code>
+      </div></div>
+      <div class="class-card"><div class="cc-head">LedColor</div><div class="cc-body">
+        <div class="lbl">GUARDA</div><code>pinR · pinG · pinB</code>
+        <div class="lbl">HACE</div><code>colorPorTemp(temp)<br>apagar()</code>
+      </div></div>
+      <div class="class-card"><div class="cc-head">Cara</div><div class="cc-body">
+        <div class="lbl">GUARDA</div><code>sensores · matriz · ledColor<br>estadoActual · caras[]</code>
+        <div class="lbl">HACE</div><code>decidirAnimo()<br>actualizar()</code>
+      </div></div>
+    </div>
+    <div class="note bridge">
+      <b>Los patrones son datos:</b> cada cara (contenta, triste, enojada…) es un dibujo de 8x8 que se puede guardar como una <b>matriz de 0 y 1</b> (apagado/encendido). Guardar los dibujos como datos —y no como código— es una idea potente: agregar una cara nueva es agregar un patrón, sin tocar la lógica. Eso es <b>separar los datos de la lógica</b>.
+    </div>
+  </section>
+
+  <section id="ruta">
+    <h2 class="sect"><span class="n">06</span>Hoja de ruta · hasta el 12/11</h2>
+    <p class="sect-lead">Diez misiones repartidas en las semanas que tenemos hasta la entrega. Cada misión tiene su fecha límite y termina en algo que funciona. No se avanza sin cerrar la anterior — así se llega con margen al miércoles 12 de noviembre.</p>
+    <div class="phase-title"><span>FASE 1</span> Diseño y primeros objetos · sep</div>
+    <div id="fase1"></div>
+    <div class="phase-title"><span>FASE 2</span> La carita cobra vida · oct</div>
+    <div id="fase2"></div>
+    <div class="phase-title"><span>FASE 3</span> Pulido, documentación y entrega · oct-nov</div>
+    <div id="fase3"></div>
+    <div class="note bridge">
+      <b>Puente con 4° año:</b> acá cada cara es un patrón fijo. El año que viene, en Algoritmos, van a ver cómo guardar muchos patrones en una estructura, animarlos (varias caras seguidas) y hasta generar expresiones intermedias. Esta carita es la semilla de la animación por código.
+    </div>
+  </section>
+
+  <section id="arduino">
+    <h2 class="sect"><span class="n">07</span>De la simulación a Arduino</h2>
+    <p class="sect-lead">Este simulador les muestra la lógica; el paso siguiente es hacerlo real en Wokwi programando el ESP32 con <b>Arduino (C++)</b>. Este es el molde de la clase LedColor, que traduce la temperatura en un color, para arrancar sin partir de cero.</p>
+    <div style="background:#0a1219;border-radius:12px;padding:18px 20px;overflow-x:auto;border:1px solid #24333d">
+<pre style="margin:0;font-family:Consolas,monospace;font-size:.86rem;color:#c9d6de;line-height:1.6"><span style="color:#5f7280">// Un LED RGB tiene 3 patas: roja, verde y azul. Mezclando se hace el color.</span>
+<span style="color:#ff9b1a">class</span> <span style="color:#3ddc84">LedColor</span> {
+  <span style="color:#8fd0ff">int</span> pinR, pinG, pinB;
+
+<span style="color:#ff9b1a">public</span>:
+  <span style="color:#5f7280">// --- Constructor: prepara las 3 patas como salidas ---</span>
+  <span style="color:#3ddc84">LedColor</span>(<span style="color:#8fd0ff">int</span> r, <span style="color:#8fd0ff">int</span> g, <span style="color:#8fd0ff">int</span> b) {
+    pinR = r; pinG = g; pinB = b;
+    pinMode(pinR, OUTPUT);
+    pinMode(pinG, OUTPUT);
+    pinMode(pinB, OUTPUT);
+  }
+
+  <span style="color:#5f7280">// --- Enciende el LED con una mezcla de rojo, verde y azul (0 a 255) ---</span>
+  <span style="color:#8fd0ff">void</span> <span style="color:#8fd0ff">setColor</span>(<span style="color:#8fd0ff">int</span> r, <span style="color:#8fd0ff">int</span> g, <span style="color:#8fd0ff">int</span> b) {
+    analogWrite(pinR, r);
+    analogWrite(pinG, g);
+    analogWrite(pinB, b);
+  }
+
+  <span style="color:#5f7280">// --- Elige el color segun la temperatura ---</span>
+  <span style="color:#8fd0ff">void</span> <span style="color:#8fd0ff">colorPorTemp</span>(<span style="color:#8fd0ff">float</span> temp) {
+    <span style="color:#ff9b1a">if</span> (temp &lt; <span style="color:#3ddc84">10</span>) {
+      setColor(<span style="color:#3ddc84">0</span>, <span style="color:#3ddc84">0</span>, <span style="color:#3ddc84">255</span>);      <span style="color:#5f7280">// frio -> azul</span>
+    } <span style="color:#ff9b1a">else if</span> (temp &lt; <span style="color:#3ddc84">25</span>) {
+      setColor(<span style="color:#3ddc84">0</span>, <span style="color:#3ddc84">255</span>, <span style="color:#3ddc84">0</span>);      <span style="color:#5f7280">// templado -> verde</span>
+    } <span style="color:#ff9b1a">else if</span> (temp &lt; <span style="color:#3ddc84">32</span>) {
+      setColor(<span style="color:#3ddc84">255</span>, <span style="color:#3ddc84">140</span>, <span style="color:#3ddc84">0</span>);    <span style="color:#5f7280">// calido -> naranja</span>
+    } <span style="color:#ff9b1a">else</span> {
+      setColor(<span style="color:#3ddc84">255</span>, <span style="color:#3ddc84">0</span>, <span style="color:#3ddc84">0</span>);      <span style="color:#5f7280">// calor -> rojo</span>
+    }
+  }
+};
+
+<span style="color:#5f7280">// --- Se crea el objeto (patas R=25, G=26, B=27) ---</span>
+LedColor led(<span style="color:#3ddc84">25</span>, <span style="color:#3ddc84">26</span>, <span style="color:#3ddc84">27</span>);
+
+<span style="color:#8fd0ff">void</span> <span style="color:#8fd0ff">setup</span>() {}
+
+<span style="color:#8fd0ff">void</span> <span style="color:#8fd0ff">loop</span>() {
+  <span style="color:#5f7280">// Aca leerian el DHT22; por ahora probamos con un valor fijo</span>
+  <span style="color:#8fd0ff">float</span> temperatura = <span style="color:#3ddc84">28.0</span>;
+  led.colorPorTemp(temperatura);   <span style="color:#5f7280">// deberia quedar naranja</span>
+  delay(<span style="color:#3ddc84">1000</span>);
+}</pre>
+    </div>
+    <div class="note bridge">
+      <b>Cómo se lee:</b> la <b>clase</b> LedColor es el molde y <code>led</code> es un <b>objeto</b> hecho con ese molde. El método <code>colorPorTemp()</code> encapsula toda la decisión de color: el resto del programa solo dice "mostrá el color de 28 grados" sin preocuparse por los números RGB. Para el DHT22 y la matriz van a usar las librerías <code>DHT</code> y <code>LedControl</code>: las clases Sensor y Matriz las envuelven para que el resto quede prolijo.
+    </div>
+    <div class="note">
+      <b>Regla de oro:</b> no copien código que no entienden. Antes de escribir un método, explíquenlo en una frase. Si no lo pueden decir en palabras, todavía no lo pueden programar.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <b>Proyecto Matriz LED Emocional</b> · 3° 1° · Taller de la especialidad<br>
+  Programación + Tecnología y Control · E.I. N° 9 "15 de Noviembre" — El Calafate · Departamento ACPI
+</footer>
+
+<script>
+// ============================================================
+//  SIMULADOR DE LA MATRIZ LED EMOCIONAL
+// ============================================================
+// Cada cara es una matriz 8x8 de 0 y 1
+const CARAS = {
+  contenta:[
+    "00000000",
+    "01100110",
+    "01100110",
+    "00000000",
+    "00000000",
+    "10000001",
+    "01111110",
+    "00000000"],
+  triste:[
+    "00000000",
+    "01100110",
+    "01100110",
+    "00000000",
+    "00000000",
+    "00111100",
+    "01000010",
+    "00000000"],
+  enojada:[
+    "00000000",
+    "11000011",
+    "01100110",
+    "00000000",
+    "00000000",
+    "01111110",
+    "00000000",
+    "00000000"],
+  congelada:[
+    "00000000",
+    "01100110",
+    "00000000",
+    "00000000",
+    "00111100",
+    "01000010",
+    "00111100",
+    "00000000"],
+  dormida:[
+    "00000000",
+    "01100110",
+    "00000000",
+    "00000000",
+    "00000000",
+    "00111100",
+    "00000000",
+    "00000000"],
+};
+const NOMBRES = {contenta:"😊 Contenta",triste:"😢 Triste",enojada:"😠 Enojada",congelada:"🥶 Congelada",dormida:"😴 Dormida"};
+
+const sim = { tmp:22, hum:50, luz:70, lluvia:false };
+
+// crear matriz de 64 LEDs
+const matrix=document.getElementById('matrix');
+for(let i=0;i<64;i++){const d=document.createElement('div');d.className='led';d.id='led'+i;matrix.appendChild(d);}
+
+const logBox=document.getElementById('s-log');
+let ultimoAnimo="";
+function log(msg,cls=''){const t=new Date().toLocaleTimeString('es-AR',{hour12:false});const d=document.createElement('div');d.innerHTML=`<span class="t">${t}</span> <span class="${cls}">${msg}</span>`;logBox.prepend(d);}
+
+// la tabla de reglas: gana la primera que se cumple
+function decidirAnimo(){
+  if(sim.luz<20) return 'dormida';
+  if(sim.lluvia) return 'triste';
+  if(sim.tmp>32) return 'enojada';
+  if(sim.tmp<5) return 'congelada';
+  return 'contenta';
+}
+
+function dibujarCara(nombre){
+  const patron=CARAS[nombre];
+  for(let f=0;f<8;f++){
+    for(let c=0;c<8;c++){
+      const on=patron[f][c]==='1';
+      document.getElementById('led'+(f*8+c)).classList.toggle('on',on);
+    }
+  }
+}
+
+function colorPorTemp(t){
+  if(t<10) return {css:'#2e6bff',txt:'frío (azul)',glow:'#2e6bff'};
+  if(t<25) return {css:'#3ddc84',txt:'templado (verde)',glow:'#3ddc84'};
+  if(t<32) return {css:'#ff8c1a',txt:'cálido (naranja)',glow:'#ff8c1a'};
+  return {css:'#ff3b3b',txt:'calor (rojo)',glow:'#ff3b3b'};
+}
+
+function render(){
+  document.getElementById('v-tmp').textContent=sim.tmp;
+  document.getElementById('v-hum').textContent=sim.hum;
+  document.getElementById('v-luz').textContent=sim.luz;
+  const animo=decidirAnimo();
+  dibujarCara(animo);
+  document.getElementById('mood-name').textContent=NOMBRES[animo];
+  const col=colorPorTemp(sim.tmp);
+  const dot=document.getElementById('rgb-dot');
+  dot.style.background=col.css; dot.style.boxShadow='0 0 16px -1px '+col.glow;
+  document.getElementById('rgb-txt').textContent=col.txt;
+  // readout
+  document.getElementById('readout').innerHTML=
+    `<div class="r"><span>lluvia</span><b>${sim.lluvia?'SÍ':'no'}</b></div>`+
+    `<div class="r"><span>temp</span><b>${sim.tmp}°C</b></div>`+
+    `<div class="r"><span>humedad</span><b>${sim.hum}%</b></div>`+
+    `<div class="r"><span>luz</span><b>${sim.luz}%</b></div>`+
+    `<div class="r"><span>estado</span><b>${NOMBRES[animo]}</b></div>`;
+  if(animo!==ultimoAnimo){ log('Nuevo humor: '+NOMBRES[animo],'hi'); ultimoAnimo=animo; }
+}
+
+document.getElementById('sl-tmp').addEventListener('input',e=>{sim.tmp=+e.target.value;render();});
+document.getElementById('sl-hum').addEventListener('input',e=>{sim.hum=+e.target.value;render();});
+document.getElementById('sl-luz').addEventListener('input',e=>{sim.luz=+e.target.value;render();});
+document.getElementById('tg-seco').addEventListener('click',()=>{sim.lluvia=false;document.getElementById('tg-seco').classList.add('on');document.getElementById('tg-lluvia').classList.remove('on');render();});
+document.getElementById('tg-lluvia').addEventListener('click',()=>{sim.lluvia=true;document.getElementById('tg-lluvia').classList.add('on');document.getElementById('tg-seco').classList.remove('on');render();});
+
+render();
+log('Sistema listo · leyendo sensores','t');
+
+// ============================================================
+//  HOJA DE RUTA
+// ============================================================
+const misiones=[
+  {f:1,n:1,s:'al 8/9',sec:'ambas',t:'Entender el problema y repartir el trabajo',d:'Las dos secciones leen la actividad juntas. Programación dibuja el diagrama de clases y la tabla de humores; Tecnología y Control elige la matriz y arma la lista de componentes.',e:'Clases + tabla de humores'},
+  {f:1,n:2,s:'al 15/9',sec:'tec',t:'Definir y montar el circuito',d:'Tecnología y Control conecta la matriz LED, el DHT22, el sensor de lluvia, el fotorresistor y el LED de color al ESP32, y arma la tabla de pines compartida.',e:'Circuito + tabla de pines'},
+  {f:1,n:3,s:'al 22/9',sec:'prog',t:'Clase Matriz: dibujar una cara',d:'Programación crea la clase Matriz y logra encender un patrón 8x8 fijo (una carita sonriente) en la matriz.',e:'Una cara aparece en la matriz'},
+  {f:1,n:4,s:'al 29/9',sec:'prog',t:'Clase Sensor y clase LedColor',d:'Clase Sensor que lee el DHT22 y los demás, y clase LedColor que cambia de color según la temperatura.',e:'Sensores leen, LED cambia de color'},
+  {f:2,n:5,s:'al 6/10',sec:'prog',t:'Varias caras guardadas como patrones',d:'Guardar los dibujos (contenta, triste, enojada…) como datos y poder mostrar cualquiera con un solo comando.',e:'Se puede mostrar cada cara'},
+  {f:2,n:6,s:'al 13/10',sec:'prog',t:'La tabla de decisión de humor',d:'El corazón: combinar las cuatro lecturas y elegir el estado de ánimo según las reglas, en orden de prioridad.',e:'La carita elige su humor solo'},
+  {f:2,n:7,s:'ambas',s2:'al 20/10',t:'Integración total',d:'Punto de encuentro: cuerpo + cerebro. Los sensores reales mueven la cara y el color en tiempo real, todo junto.',e:'La carita reacciona al clima real'},
+  {f:3,n:8,s:'al 27/10',sec:'ambas',t:'Detalles y pulido',d:'Suavizar cambios bruscos, agregar una cara nueva propia, ajustar los umbrales. Programación pule; Tecnología y Control revisa conexiones.',e:'Sistema pulido y con onda'},
+  {f:3,n:9,s:'al 3/11',sec:'ambas',t:'Documentar el proyecto',d:'Web con HTML/CSS que explique todo: diseño de objetos, tabla de humores, lista de componentes, tabla de pines y capturas.',e:'Página del proyecto'},
+  {f:3,n:10,s:'al 12/11',sec:'ambas',t:'Ensayo, checklist y ENTREGA',d:'Simulacro cronometrado y revisión final conjunta: circuito, código, web y guion. Entrega para corrección el miércoles 12.',e:'Entregado a corrección'},
+];
+const secMeta={prog:{txt:'Programación',cls:'tag-prog'},tec:{txt:'Tecnología y Control',cls:'tag-tec'},ambas:{txt:'Las dos secciones',cls:'tag-ambas'}};
+['fase1','fase2','fase3'].forEach((id,idx)=>{
+  const cont=document.getElementById(id);
+  misiones.filter(m=>m.f===idx+1).forEach(m=>{
+    const elm=document.createElement('div');const final=m.n===10;const fecha=m.s2||m.s;const meta=secMeta[m.sec]||secMeta.ambas;
+    elm.className='mission'+(final?' mission-final':'');
+    elm.innerHTML=`<div class="m-num"><small>MISIÓN</small><b>${m.n}</b><small class="lim">${fecha}</small></div>
+      <div class="m-body"><div class="m-head"><h4>${m.t}</h4><span class="sec-tag ${meta.cls}">${meta.txt}</span></div><p>${m.d}</p><span class="deliver">✓ ${m.e}</span></div>`;
+    cont.appendChild(elm);
+  });
+});
+</script>
+</body>
+</html>
