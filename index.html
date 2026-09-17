@@ -56,6 +56,10 @@
   .rgb-strip{display:flex;align-items:center;gap:12px;background:#0a0f16;border:1px solid #1c2732;border-radius:10px;padding:10px 16px;}
   .rgb-dot{width:30px;height:30px;border-radius:50%;transition:background .4s, box-shadow .4s;}
   .rgb-label{font-size:.72rem;color:var(--steel-dim);letter-spacing:.05em;}
+  /* LCD 16x2 I2C */
+  .lcd{background:#123b1e;border:3px solid #0a2412;border-radius:8px;padding:10px 12px;box-shadow:inset 0 0 18px rgba(0,0,0,.5);width:100%;max-width:320px;}
+  .lcd-line{font-family:"Consolas",monospace;font-size:1rem;letter-spacing:1px;color:#7dffa0;text-shadow:0 0 6px rgba(125,255,160,.5);height:1.4em;white-space:pre;overflow:hidden;}
+  .lcd-cap{font-size:.6rem;color:var(--steel-dim);letter-spacing:.05em;text-align:center;margin-top:4px;}
   .device{background:#0d1620;border:1px solid #2b3a45;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:16px;}
   .device h3{margin:0;font-size:.78rem;letter-spacing:.18em;color:var(--steel-dim);font-weight:700;}
   .slider-unit label{font-size:.72rem;color:var(--steel);font-weight:700;display:flex;justify-content:space-between;margin-bottom:4px;}
@@ -163,7 +167,7 @@
     <div>
       <div class="mast-tag">EXPOTÉCNICA · PROYECTO INTEGRADOR</div>
       <h1 class="mast-title">Carita LED 16×8<br>que siente el clima</h1>
-      <p class="mast-sub">Dos matrices unidas forman una cara ancha y expresiva: dos ojos que parpadean y una boca grande que se anima. Lee lluvia, temperatura, humedad y luz, y muestra cómo se siente. Un proyecto de taller entre dos secciones: <b>Programación</b> pone la lógica, <b>Tecnología y Control</b> pone el cuerpo físico.</p>
+      <p class="mast-sub">Dos matrices unidas forman una cara ancha y expresiva: dos ojos que parpadean y una boca grande que se anima. Lee lluvia, temperatura, humedad y luz, muestra cómo se siente <b>y escribe el estado en una pantalla LCD</b>. Un proyecto de taller entre dos secciones: <b>Programación</b> pone la lógica, <b>Tecnología y Control</b> pone el cuerpo físico.</p>
       <div class="deadline-pill">📅 Entrega para corrección: <b>miércoles 12 de noviembre</b> · 10 semanas de trabajo</div>
     </div>
     <div class="mast-meta">
@@ -204,6 +208,11 @@
             <div class="rgb-dot" id="rgb-dot"></div>
             <span class="rgb-label" id="rgb-txt">templado</span>
           </div>
+          <div class="lcd">
+            <div class="lcd-line" id="lcd1">Estado: Feliz</div>
+            <div class="lcd-line" id="lcd2">T:22C H:50 L:70</div>
+          </div>
+          <div class="lcd-cap">PANTALLA LCD 16x2 · muestra el estado por escrito</div>
         </div>
 
         <div class="device">
@@ -282,10 +291,10 @@
     <h2 class="sect"><span class="n">04</span>Cómo funciona por dentro</h2>
     <p class="sect-lead">El sistema repite siempre el mismo ciclo. Entender este recorrido es entender todo el proyecto.</p>
     <div class="note bridge">
-      <b>El ciclo de la carita:</b> leer los cuatro sensores → decidir el estado de ánimo según una tabla de reglas → dibujar esa cara repartida en los <b>dos módulos</b> → calcular el color del LED según la temperatura → cada tanto, animar (parpadeo, boca) → volver a empezar.
+      <b>El ciclo de la carita:</b> leer los cuatro sensores → decidir el estado de ánimo según una tabla de reglas → dibujar esa cara repartida en los <b>dos módulos</b> → escribir el estado y las lecturas en la <b>LCD</b> → calcular el color del LED según la temperatura → cada tanto, animar (parpadeo, boca) → volver a empezar.
     </div>
     <div class="note">
-      <b>Por qué con objetos:</b> el sistema está hecho de piezas. Cada <b>Sensor</b> sabe leer su magnitud; la <b>Cara</b> (que maneja los dos módulos) sabe dibujar una expresión; el <b>LedColor</b> pasa temperatura a color; el objeto <b>Emocion</b> decide qué humor mostrar combinando todo.
+      <b>Por qué con objetos:</b> el sistema está hecho de piezas. Cada <b>Sensor</b> sabe leer su magnitud; la <b>Cara</b> (que maneja los dos módulos) sabe dibujar una expresión; el <b>LedColor</b> pasa temperatura a color; la <b>Pantalla</b> escribe el estado en la LCD; el objeto <b>Emocion</b> decide qué humor mostrar combinando todo.
     </div>
 
     <h3 style="color:var(--brand-deep);margin:26px 0 4px;font-size:1.15rem">La tabla de humores (el cerebro del sistema)</h3>
@@ -311,7 +320,7 @@
         <h3>Programación</h3>
         <div class="sec-role">El cerebro: la lógica que decide el humor.</div>
         <ul>
-          <li>Diseñar las clases (Sensor, Cara, LedColor, Emocion).</li>
+          <li>Diseñar las clases (Sensor, Cara, LedColor, Pantalla, Emocion).</li>
           <li>Programar la tabla de reglas que elige el estado de ánimo.</li>
           <li>Dibujar cada cara repartida en los dos módulos y animarla.</li>
           <li>Documentar el código y el diseño de objetos.</li>
@@ -324,7 +333,7 @@
         <div class="sec-role">El cuerpo: lo que mide y lo que se ilumina.</div>
         <ul>
           <li>Definir y <b>encadenar las dos matrices</b> (¿dos MAX7219 en cascada?).</li>
-          <li>Conectar el DHT22, el sensor de lluvia, el fotorresistor y el LED de color.</li>
+          <li>Conectar el DHT22, el sensor de lluvia, el fotorresistor, el LED de color y la LCD I2C.</li>
           <li>Armar el gabinete o soporte de la carita ancha.</li>
           <li>Documentar el conexionado y la lista de componentes.</li>
         </ul>
@@ -351,6 +360,7 @@
             <tr><th>Acción a producir</th><th>Componente / decisión</th></tr>
             <tr><td>Dibujar la carita ancha</td><td class="pick">2 matrices 8×8 encadenadas (MAX7219)</td></tr>
             <tr><td>Color según temperatura</td><td class="pick">LED RGB</td></tr>
+            <tr><td>Estado por escrito</td><td class="pick">LCD 16x2 I2C</td></tr>
           </table>
         </div>
       </div>
@@ -376,8 +386,12 @@
         <div class="lbl">GUARDA</div><code>pinR · pinG · pinB</code>
         <div class="lbl">HACE</div><code>colorPorTemp(temp)<br>apagar()</code>
       </div></div>
+      <div class="class-card"><div class="cc-head">Pantalla</div><div class="cc-body">
+        <div class="lbl">GUARDA</div><code>dirección I2C</code>
+        <div class="lbl">HACE</div><code>mostrarEstado(nombre)<br>mostrarLecturas(t, h, l)</code>
+      </div></div>
       <div class="class-card"><div class="cc-head">Emocion</div><div class="cc-body">
-        <div class="lbl">GUARDA</div><code>sensores · cara · ledColor<br>estadoActual · caras[]</code>
+        <div class="lbl">GUARDA</div><code>sensores · cara · ledColor<br>pantalla · estadoActual · caras[]</code>
         <div class="lbl">HACE</div><code>decidirAnimo()<br>actualizar()</code>
       </div></div>
     </div>
@@ -450,7 +464,7 @@
 <span style="color:#8fd0ff">void</span> <span style="color:#8fd0ff">loop</span>() {}</pre>
     </div>
     <div class="note bridge">
-      <b>Cómo se lee:</b> la <b>clase</b> Cara recibe en el constructor un <code>2</code>, que le dice a la librería que hay <b>dos módulos encadenados</b>. El método <code>dibujar()</code> reparte la cara: la mitad izquierda va al módulo 0 y la derecha al módulo 1. Cada cara es un par de arreglos de 8 <code>byte</code> — ¡exactamente lo que genera el editor de arriba! Los sensores (DHT22, lluvia, LDR) van en la clase Sensor, con la librería <code>DHT</code>.
+      <b>Cómo se lee:</b> la <b>clase</b> Cara recibe en el constructor un <code>2</code>, que le dice a la librería que hay <b>dos módulos encadenados</b>. El método <code>dibujar()</code> reparte la cara: la mitad izquierda va al módulo 0 y la derecha al módulo 1. Cada cara es un par de arreglos de 8 <code>byte</code> — ¡exactamente lo que genera el editor de arriba! Los sensores (DHT22, lluvia, LDR) van en la clase Sensor con la librería <code>DHT</code>, y la <b>LCD 16x2</b> va en la clase Pantalla con la librería <code>LiquidCrystal_I2C</code> — se conecta con solo 2 cables (SDA y SCL) porque es I2C.
     </div>
     <div class="note">
       <b>Regla de oro:</b> no copien código que no entienden. Antes de escribir un método, explíquenlo en una frase. Si no lo pueden decir en palabras, todavía no lo pueden programar.
@@ -562,6 +576,9 @@ function colorPorTemp(t){
 }
 
 let animoActual='contenta';
+// nombre corto (sin emoji) para la LCD, que solo muestra texto
+const NOMBRE_LCD={contenta:"Feliz",triste:"Triste",enojada:"Enojada",congelada:"Con frio",dormida:"Dormida"};
+function padLCD(s){return (s+'                ').slice(0,16);}
 function render(){
   document.getElementById('v-tmp').textContent=sim.tmp;
   document.getElementById('v-hum').textContent=sim.hum;
@@ -573,6 +590,9 @@ function render(){
   const dot=document.getElementById('rgb-dot');
   dot.style.background=col.css;dot.style.boxShadow='0 0 16px -1px '+col.css;
   document.getElementById('rgb-txt').textContent=col.txt;
+  // LCD 16x2: línea 1 = estado por escrito, línea 2 = lecturas
+  document.getElementById('lcd1').textContent=padLCD('Estado: '+NOMBRE_LCD[animoActual]);
+  document.getElementById('lcd2').textContent=padLCD('T:'+sim.tmp+'C H:'+sim.hum+' L:'+sim.luz);
   document.getElementById('readout').innerHTML=
     `<div class="r"><span>lluvia</span><b>${sim.lluvia?'SÍ':'no'}</b></div>`+
     `<div class="r"><span>temp</span><b>${sim.tmp}°C</b></div>`+
@@ -651,9 +671,9 @@ edFill('contenta');
 // ============================================================
 const misiones=[
   {f:1,n:1,s:'al 8/9',sec:'ambas',t:'Entender el problema y repartir el trabajo',d:'Las dos secciones leen la actividad juntas. Programación dibuja el diagrama de clases y la tabla de humores; Tecnología y Control resuelve cómo encadenar las dos matrices y arma la lista de componentes.',e:'Clases + tabla de humores'},
-  {f:1,n:2,s:'al 15/9',sec:'tec',t:'Montar y encadenar las dos matrices',d:'Tecnología y Control conecta los dos módulos MAX7219 en cascada, el DHT22, el sensor de lluvia, el fotorresistor y el LED de color al ESP32, y arma la tabla de pines.',e:'Circuito + tabla de pines'},
+  {f:1,n:2,s:'al 15/9',sec:'tec',t:'Montar y encadenar las dos matrices',d:'Tecnología y Control conecta los dos módulos MAX7219 en cascada, el DHT22, el sensor de lluvia, el fotorresistor, el LED de color y la LCD I2C al ESP32, y arma la tabla de pines.',e:'Circuito + tabla de pines'},
   {f:1,n:3,s:'al 22/9',sec:'prog',t:'Clase Cara: dibujar en los dos módulos',d:'Programación crea la clase Cara y logra encender un patrón que ocupe las dos matrices como una sola pantalla de 16x8.',e:'Una cara ancha en los 2 módulos'},
-  {f:1,n:4,s:'al 29/9',sec:'prog',t:'Clase Sensor y clase LedColor',d:'Clase Sensor que lee el DHT22 y los demás, y clase LedColor que cambia de color según la temperatura.',e:'Sensores leen, LED cambia de color'},
+  {f:1,n:4,s:'al 29/9',sec:'prog',t:'Clases Sensor, LedColor y Pantalla',d:'Clase Sensor que lee el DHT22 y los demás, clase LedColor que cambia de color según la temperatura, y clase Pantalla que escribe el estado en la LCD I2C.',e:'Sensores leen, LED y LCD responden'},
   {f:2,n:5,s:'al 6/10',sec:'prog',t:'Varias caras + editor de patrones',d:'Diseñar varias caras (contenta, triste, enojada…) con el editor, guardarlas como bytes y poder mostrar cualquiera.',e:'Se puede mostrar cada cara'},
   {f:2,n:6,s:'al 13/10',sec:'prog',t:'La tabla de decisión + parpadeo',d:'El corazón: combinar las cuatro lecturas y elegir el humor por prioridad. Sumar el parpadeo y la animación de la boca.',e:'La carita elige su humor y parpadea'},
   {f:2,n:7,s:'ambas',s2:'al 20/10',t:'Integración total',d:'Punto de encuentro: cuerpo + cerebro. Los sensores reales mueven la cara y el color en tiempo real sobre las dos matrices, todo junto.',e:'La carita reacciona al clima real'},
